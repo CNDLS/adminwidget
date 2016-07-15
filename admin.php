@@ -25,7 +25,7 @@ class AdminWidget extends WP_Widget {
         	echo $before_title . $title . $after_title;
         #Call custom function from author-plugin.php in the mu-plugins directory
 		echo '<ul>';
-		list_admin_users('show_fullname=1&optioncount=1&hide_empty=0'); 
+		$this->list_admin_users('show_fullname=1&optioncount=1&hide_empty=0'); 
         echo '</ul>';
 		echo $after_widget; 
     }
