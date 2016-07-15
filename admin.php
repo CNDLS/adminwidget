@@ -12,7 +12,7 @@ Author URI: http://cndls.georgetown.edu
 class AdminWidget extends WP_Widget {
     /** constructor */
     function AdminWidget() {
-        require_once(ABSPATH.'wp-content/mu-plugins/author-plugin.php');
+        require_once(ABSPATH.'wp-content/author-plugin.php');
 		$widget_ops = array('classname' => 'widget_listadmins', 'description' => __( 'Displays a list of blog administrators/instructors') );
 		parent::WP_Widget(false, $name = 'Admins', $widget_ops);	
     }
