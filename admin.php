@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: Admins - sidebar widget
-Plugin URI: http://cndls.georgetown.edu
+Plugin Name: Admins Standalone - sidebar widget
+Plugin URI: https://github.com/CNDLS/adminwidget
 Description: Adds a sidebar widget that lists the administrators/instructors in the blog
 Author: CNDLS
 Author URI: http://cndls.georgetown.edu
@@ -58,70 +58,19 @@ class AdminWidget extends WP_Widget {
 
     	$return = '';
 
-    	// $sub_query = "SELECT DISTINCT user_id from $wpdb->usermeta WHERE $wpdb->usermeta.meta_key = 'wp_".$wpdb->blogid."_user_level'";
-    	$user_query = get_users('role=administrator');
-        $admin_list = array();
-        // print_r($user_query);
-    
-        foreach ($user_query as $admin) {
-        	// print_r($author->ID);
-        	array_push($admin_list,$admin->ID);
-        }
-        // print_r($author_list);
+    	$admins = get_users( [ 'role__in' => ['administrator', 'Administrator', 'admin', 'Admin'] ] );
 
-        $admin_id_list = implode(',', $admin_list);
-
-        if (!empty($admin_id_list)) { # check to make sure the array isn't empty
-            $authors = $wpdb->get_results("SELECT user_id as ID, meta_value from $wpdb->usermeta
-                                        WHERE $wpdb->usermeta.meta_key = 'last_name' AND $wpdb->usermeta.user_id IN ($admin_id_list)
-                                        ORDER BY meta_value");
         
-            $author_count = array();
-            foreach ((array) $wpdb->get_results("SELECT DISTINCT post_author, COUNT(ID) AS count FROM $wpdb->posts WHERE post_type = 'post' AND " . get_private_posts_cap_sql( 'post' ) . " GROUP BY post_author") as $row) {
-                $author_count[$row->post_author] = $row->count;
-            }
-
-            # fetch the ID of the owner from the database
-            $owner['id'] = $wpdb->get_var("select id from $wpdb->users where user_email = '" . get_option('admin_email') . "'");
-
-            # find the owner in the admin list
-            $i = 0;
-            foreach ( (array) $authors as $author ) {
-                if ($owner['id'] == $author->ID) {
-                    $owner['key'] = $i;
-                }
-                $i++;
-            }
-
-            # reorder the admins array if necessary
-            # 1) preserve the owner's object
-            # 2) remove the owner from the admins array
-            # 3) reset the array keys (array_merge trick)
-            # 4) take the preserved owner object and prepend on the admins array
-            if ($owner['key']) {
-                $owner['object'] = $authors[$owner['key']];
-                unset($authors[$owner['key']]);
-                $authors = array_merge($authors);
-                array_unshift($authors, $owner['object']);
-            }
-
-            foreach ( (array) $authors as $author ) {
-                $author = get_userdata( $author->ID );
-                $posts = (isset($author_count[$author->ID])) ? $author_count[$author->ID] : 0;
-                $name = $author->display_name;
-        
-                //Get the role for the authors
-                $auth = $author -> ID;
-                $auth_info = get_usermeta($auth, "wp_".$blog_id."_capabilities");
-                # If user is a member of blog, only then does the $auth_info variable has value.
-                # Hence, if check is this is a NON-EMPTY variable (Handles the error thrown if the $auth_info var is empty)
+            foreach ( (array) $admins as $admin ) {
                 if ($auth_info)
                     $auth_role = key($auth_info);
         
                 if ($auth_role == 'administrator'){
                 if ( $show_fullname && ($author->first_name != '' && $author->last_name != '') )
                     $name = "$author->first_name $author->last_name";
-
+                else
+                    $name = $author->display_name;
+                
                 if ( !($posts == 0 && $hide_empty) )
                     $return .= '<li>';
                 if ( $posts == 0 ) {
